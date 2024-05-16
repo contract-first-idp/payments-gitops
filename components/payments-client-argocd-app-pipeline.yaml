@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: payments-client-pipeline
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/contract-first-idp/payments-client
+    targetRevision: HEAD
+    path: .tekton
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: payments-build
+  syncPolicy:
+    automated: 
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=false
+    - RespectIgnoreDifferences=true
+    - ApplyOutOfSyncOnly=true
+    retry:
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 10m
